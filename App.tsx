@@ -1,117 +1,87 @@
-/**
- * Sample React Native App
- * https://github.com/facebook/react-native
- *
- * @format
- */
+import {Button, FlatList, SafeAreaView, StyleSheet, View} from 'react-native';
+import React, {useState} from 'react';
+import TodoItem from './components/TodoItem';
+import TodoInput from './components/TodoInput';
 
-import React from 'react';
-import type {PropsWithChildren} from 'react';
-import {
-  SafeAreaView,
-  ScrollView,
-  StatusBar,
-  StyleSheet,
-  Text,
-  useColorScheme,
-  View,
-} from 'react-native';
-
-import {
-  Colors,
-  DebugInstructions,
-  Header,
-  LearnMoreLinks,
-  ReloadInstructions,
-} from 'react-native/Libraries/NewAppScreen';
-
-type SectionProps = PropsWithChildren<{
-  title: string;
-}>;
-
-function Section({children, title}: SectionProps): React.JSX.Element {
-  const isDarkMode = useColorScheme() === 'dark';
-  return (
-    <View style={styles.sectionContainer}>
-      <Text
-        style={[
-          styles.sectionTitle,
-          {
-            color: isDarkMode ? Colors.white : Colors.black,
-          },
-        ]}>
-        {title}
-      </Text>
-      <Text
-        style={[
-          styles.sectionDescription,
-          {
-            color: isDarkMode ? Colors.light : Colors.dark,
-          },
-        ]}>
-        {children}
-      </Text>
-    </View>
-  );
+interface TodoItem {
+  // uid: string | number;
+  id: string | number;
+  text: string;
 }
 
-function App(): React.JSX.Element {
-  const isDarkMode = useColorScheme() === 'dark';
+const App = () => {
+  const [todos, setTodos] = useState<TodoItem[]>([]);
+  const [isModalOpen, setIsModalOpen] = useState(false);
 
-  const backgroundStyle = {
-    backgroundColor: isDarkMode ? Colors.darker : Colors.lighter,
-  };
+  function handleAddTodo(todoValue: string) {
+    setTodos(prev => [
+      ...prev,
+      {id: new Date().toISOString(), text: todoValue},
+      // {uid: new Date().toISOString(), text: todoValue}, if used uid no need of key extractor
+    ]);
+    closeModal();
+  }
+
+  function handleDeleteTodo(id: string | number) {
+    setTodos(current => current.filter(todo => todo.id !== id));
+  }
+
+  function closeModal() {
+    setIsModalOpen(false);
+  }
 
   return (
-    <SafeAreaView style={backgroundStyle}>
-      <StatusBar
-        barStyle={isDarkMode ? 'light-content' : 'dark-content'}
-        backgroundColor={backgroundStyle.backgroundColor}
+    <SafeAreaView style={styles.container}>
+      <View style={styles.addBtn}>
+        {/* Button is a component with some styling and same type as now Pressable ,before Touchable */}
+        <Button
+          color="teal"
+          title="Add Todo..."
+          onPress={() => setIsModalOpen(true)}
+        />
+      </View>
+      {isModalOpen && (
+        <TodoInput
+          onAddTodo={handleAddTodo}
+          isVisible={isModalOpen}
+          onCloseModal={closeModal}
+        />
+      )}
+      <FlatList
+        data={todos}
+        showsVerticalScrollIndicator={false}
+        keyExtractor={item => item.id.toString()}
+        renderItem={({item}) => (
+          <TodoItem
+            title={item.text}
+            id={item.id}
+            onDeleteItem={handleDeleteTodo}
+          />
+        )}
       />
-      <ScrollView
-        contentInsetAdjustmentBehavior="automatic"
-        style={backgroundStyle}>
-        <Header />
-        <View
-          style={{
-            backgroundColor: isDarkMode ? Colors.black : Colors.white,
-          }}>
-          <Section title="Step One">
-            Edit <Text style={styles.highlight}>App.tsx</Text> to change this
-            screen and then come back to see your edits.
-          </Section>
-          <Section title="See Your Changes">
-            <ReloadInstructions />
-          </Section>
-          <Section title="Debug">
-            <DebugInstructions />
-          </Section>
-          <Section title="Learn More">
-            Read the docs to discover what to do next:
-          </Section>
-          <LearnMoreLinks />
-        </View>
-      </ScrollView>
     </SafeAreaView>
   );
-}
+};
 
 const styles = StyleSheet.create({
-  sectionContainer: {
-    marginTop: 32,
-    paddingHorizontal: 24,
+  container: {
+    margin: 20,
   },
-  sectionTitle: {
-    fontSize: 24,
-    fontWeight: '600',
+  inputContainer: {
+    marginVertical: 20,
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
   },
-  sectionDescription: {
-    marginTop: 8,
-    fontSize: 18,
-    fontWeight: '400',
+  textInput: {
+    borderWidth: 1,
+    padding: 12,
+    borderRadius: 4,
+    borderColor: '#c2bdbd',
+    width: '60%',
   },
-  highlight: {
-    fontWeight: '700',
+  addBtn: {
+    marginBottom: 18,
   },
 });
 
